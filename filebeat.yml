@@ -1,0 +1,11 @@
+filebeat:
+  prospectors:
+    -
+      paths:
+        - "/opt/wso2/esb/repository/logs/*.log"
+      document_type: wso2
+output:
+  redis:
+    hosts: ["redis"]
+    port: 6379
+    key: "logstash"
