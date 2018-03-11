@@ -1,0 +1,57 @@
+version: '3'
+services:
+  redis:
+    image: 'redis:3.2.6'
+    container_name: redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - 'redis-data:/data'
+    networks:
+      - esb2
+  elasticsearch:
+    image: 'elasticsearch:5.1.2'
+    container_name: elastic
+    environment:
+      - 'ES_JAVA_OPTS=-Xms1g -Xmx1g'
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+    volumes:
+      - '$PWD/compose/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml'
+      - 'es-data:/usr/share/elasticsearch/data'
+    networks:
+      - esb2
+  kibana:
+    image: 'kibana:5.1.2'
+    container_name: kibana
+    ports:
+      - '5601:5601'
+    volumes:
+      - '$PWD/compose/kibana/config/kibana.yml:/etc/kibana/kibana.yml'
+    networks:
+      - esb2
+    depends_on:
+      - elasticsearch
+  logstash:
+    image: 'logstash:5.1.2'
+    container_name: logstash
+    command: 'logstash -f /config/'
+    environment:
+      - 'JAVA_OPTS=-Xms1g -Xmx1g'
+    volumes:
+      - '$PWD/compose/logstash/config:/config'
+    networks:
+      - esb2
+    depends_on:
+      - elasticsearch
+      - redis
+volumes:
+  es-data:
+    driver: local
+  redis-data:
+    driver: local
+networks:
+  esb2:
+    driver: bridge
+
